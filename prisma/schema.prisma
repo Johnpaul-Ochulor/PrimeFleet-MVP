@@ -1,0 +1,121 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+enum Role {
+  CUSTOMER
+  OPERATIONS_MANAGER
+  SUPER_ADMIN
+}
+
+enum BookingStatus {
+  CONFIRMED
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum VehicleType {
+  SEDAN
+  SUV
+  VAN
+  BUS
+}
+
+
+model User {
+  id       String    @id @default(uuid())
+  name     String?   // Requirement: Added name field
+  email    String    @unique
+  password String
+  role     Role      @default(CUSTOMER) // Requirement: Enforced roles
+  bookings Booking[]
+}
+
+model Vehicle {
+  id               String      @id @default(uuid())
+  make             String
+  model            String
+  year             Int         // Requirement: Added year
+  plateNumber      String      @unique
+  vehicleType      VehicleType // Requirement: Sedan/SUV/Van/Bus enum
+  pricePerDay      Float
+  isAvailable      Boolean     @default(true)
+  photo            String?     // Requirement: Added photo URL
+  inspectionRecord String?     // Requirement: Added inspection record
+  bookings         Booking[]
+}
+
+model Driver {
+  id             String    @id @default(uuid())
+  name           String
+  phone          String
+  licenseNumber  String    @unique // Requirement: Added for compliance
+  licensePhoto   String?   // Requirement: Added for verification
+  profilePhoto   String?   // Requirement: Added for vendor compliance
+  approvalStatus Boolean   @default(false) // Requirement: Added approval status
+  isAvailable    Boolean   @default(true)
+  
+  // Requirement: Primary and Backup Driver relations
+  primaryBookings Booking[] @relation("PrimaryDriver")
+  backupBookings  Booking[] @relation("BackupDriver")
+}
+
+model Booking {
+  id              String        @id @default(uuid())
+  startDate       DateTime
+  endDate         DateTime
+  status          BookingStatus @default(CONFIRMED) // Requirement: Status history tracking
+  
+  // Requirement: Pickup/Dropoff Locations
+  pickupLocation  String
+  dropoffLocation String
+  
+  // Requirement: Passenger Details (Step 4 of Flowchart)
+  passengerName   String
+  passengerPhone  String
+  instructions    String?
+
+  // Relations
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  vehicleId       String
+  vehicle         Vehicle       @relation(fields: [vehicleId], references: [id])
+  
+  // Requirement: Assigned Primary and Backup Drivers
+  driverId        String?
+  driver          Driver?       @relation("PrimaryDriver", fields: [driverId], references: [id])
+  backupDriverId  String?
+  backupDriver    Driver?       @relation("BackupDriver", fields: [backupDriverId], references: [id])
+  
+  // Requirement: Link to Zone for pricing
+  zoneId          String
+  zone            Zone          @relation(fields: [zoneId], references: [id])
+  
+  payment         Payment?
+}
+
+model Payment {
+  id             String   @id @default(uuid())
+  amount         Float    // Total amount
+  depositAmount  Float    // Requirement: Deposit/Balance breakdown
+  balanceDue     Float    // Requirement: Deposit/Balance breakdown
+  type           String   // Requirement: Card vs Bank Transfer
+  status         String   @default("UNPAID")
+  paystackRef    String?  @unique // Requirement: Paystack reference
+  bookingId      String   @unique
+  booking        Booking  @relation(fields: [bookingId], references: [id])
+}
+
+model Zone {
+  id       String    @id @default(uuid())
+  name     String    // e.g., "Ikeja", "Lekki"
+  isActive Boolean   @default(true)
+  bookings Booking[] // Requirement: Pricing zones
+}
