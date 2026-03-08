@@ -8,12 +8,13 @@ generator client {
 
 
 enum Role {
-  CUSTOMER
+
   OPERATIONS_MANAGER
   SUPER_ADMIN
 }
 
 enum BookingStatus {
+  PENDING
   CONFIRMED
   ASSIGNED
   IN_PROGRESS
@@ -34,7 +35,8 @@ model User {
   name     String?   // Requirement: Added name field
   email    String    @unique
   password String
-  role     Role      @default(CUSTOMER) // Requirement: Enforced roles
+  fullName String
+  role     Role      @default(OPERATIONS_MANAGER) // Requirement: Enforced roles
   bookings Booking[]
 }
 
@@ -47,8 +49,8 @@ model Vehicle {
   vehicleType      VehicleType // Requirement: Sedan/SUV/Van/Bus enum
   pricePerDay      Float
   isAvailable      Boolean     @default(true)
-  photo            String?     // Requirement: Added photo URL
-  inspectionRecord String?     // Requirement: Added inspection record
+  photoUrl            String?     // Requirement: Added photo URL
+  inspectionRecordUrl String?     // Requirement: Added inspection record
   bookings         Booking[]
 }
 
@@ -57,8 +59,8 @@ model Driver {
   name           String
   phone          String
   licenseNumber  String    @unique // Requirement: Added for compliance
-  licensePhoto   String?   // Requirement: Added for verification
-  profilePhoto   String?   // Requirement: Added for vendor compliance
+  licensePhotoUrl   String?   // Requirement: Added for verification
+  profilePhotoUrl   String?   // Requirement: Added for vendor compliance
   approvalStatus Boolean   @default(false) // Requirement: Added approval status
   isAvailable    Boolean   @default(true)
   
@@ -69,18 +71,29 @@ model Driver {
 
 model Booking {
   id              String        @id @default(uuid())
+  // Requirement: Passenger Details
+  passengerName   String
+  passengerPhone  String
+  passengerEmail  String
+  numberOfPassengers Int       @default(1) 
   startDate       DateTime
   endDate         DateTime
-  status          BookingStatus @default(CONFIRMED) // Requirement: Status history tracking
+
+  // --- Lifecycle Status & History Tracking ---
+  status          BookingStatus @default(PENDING) // Requirement: Status history tracking
+
+  assignedAt         DateTime?
+  confirmedAt        DateTime?
+  inProgressAt       DateTime?
+  completedAt        DateTime?
+  cancelledAt        DateTime?
   
   // Requirement: Pickup/Dropoff Locations
   pickupLocation  String
   dropoffLocation String
   
-  // Requirement: Passenger Details (Step 4 of Flowchart)
-  passengerName   String
-  passengerPhone  String
-  instructions    String?
+  
+  instructions    String? // Optional driver notes
 
   // Relations
   userId          String
@@ -99,6 +112,9 @@ model Booking {
   zone            Zone          @relation(fields: [zoneId], references: [id])
   
   payment         Payment?
+
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 }
 
 model Payment {
@@ -108,7 +124,7 @@ model Payment {
   balanceDue     Float    // Requirement: Deposit/Balance breakdown
   type           String   // Requirement: Card vs Bank Transfer
   status         String   @default("UNPAID")
-  paystackRef    String?  @unique // Requirement: Paystack reference
+  paystackReference   String?  @unique // Requirement: Paystack reference
   bookingId      String   @unique
   booking        Booking  @relation(fields: [bookingId], references: [id])
 }
