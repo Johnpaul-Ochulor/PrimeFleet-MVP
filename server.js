@@ -17,6 +17,10 @@ app.use(cors());    // Enable Cross-Origin Resource Sharing
 app.use(morgan('dev')); // Log requests to terminal
 app.use(express.json()); // Parse JSON bodies
 
+app.get('/', (req, res) => {
+  res.status(200).send('PrimeFleet-MVP API is Live and Connected to Supabase!');
+});
+
 // 2. ROUTES
 app.use('/api/v1/auth', authRoutes);
 
