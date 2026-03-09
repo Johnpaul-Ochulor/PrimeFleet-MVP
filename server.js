@@ -1,30 +1,48 @@
+
+import 'dotenv/config'; 
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import { PrismaClient } from '@prisma/client';
+import authRoutes from './routes/authRoutes.js';
+import { protect, restrictTo } from './middleware/authMiddleware.js';
 
 const app = express();
-// const prisma = new PrismaClient();
-const prisma = new PrismaClient({});
+const prisma = new PrismaClient();
 
-// --- BASIC MIDDLEWARE SETUP ---
-app.use(helmet());        // Security headers
-app.use(cors());          // Enable Cross-Origin Resource Sharing
-app.use(morgan('dev'));   // Log requests to terminal
-app.use(express.json());  // Parse JSON bodies
+// 1. MIDDLEWARE
+app.use(helmet());  // Security headers
+app.use(cors());    // Enable Cross-Origin Resource Sharing
+app.use(morgan('dev')); // Log requests to terminal
+app.use(express.json()); // Parse JSON bodies
 
-const protect = (req, res, next) => {
-  // Logic to check JWT token will go here later
-  next();
-};
+// 2. ROUTES
+app.use('/api/v1/auth', authRoutes);
 
+
+app.get('/api/v1/admin-only-test', protect, restrictTo('SUPER_ADMIN'), (req, res) => {
+  res.json({
+    message: `Welcome ${req.user.fullName}, you have Admin access!`,
+  });
+});
 // Routes will go here...
 app.get('/test', (req, res) => {
   res.json({ message: "Middleware is working!" });
 });
 
-// --- 3. Global Error Handler ---
+app.get('/api/v1/admin-only-test', protect, restrictTo('SUPER_ADMIN'), (req, res) => {
+  res.json({
+    message: `Welcome ${req.user.fullName}, you have Admin access!`,
+  });
+});
+// 3. Testing
+app.post('/api/test-json', (req, res) => {
+  console.log("Data received from Postman:", req.body);
+  res.json({ message: "Middleware is working!", receivedData: req.body });
+});
+
+// 4. GLOBAL ERROR HANDLER (Should be the last middleware)
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
@@ -33,21 +51,6 @@ app.use((err, req, res, next) => {
   });
 });
 
+// 5. START SERVER (Always at the very bottom)
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-// TESTING
-app.post('/api/test-json', (req, res) =>{
-console.log("Data recieved from Postman: ",
-req.body);
-
-if(!req.body  || Object.keys(req.body).length ===0){
-  return res.status(400).json({error: "JSON middleware failed - no data recieved"});
-}
-
-  res.json({
-    message: "Middleware is working!",
-    receivedData: req.body
-  });
-
-});
