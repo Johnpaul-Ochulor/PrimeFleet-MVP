@@ -21,7 +21,7 @@ app.use(express.json()); // Parse JSON bodies
 //   res.status(200).send('PrimeFleet-MVP API is Live and Connected to Supabase!');
 // });
 app.get('/', (req, res) => {
-  res.send('PrimeFleet-MVP API is Live and Connected to Supabase!');
+  res.send('PrimeFleet-MVP API is Live');
 });
 
 // 2. ROUTES
