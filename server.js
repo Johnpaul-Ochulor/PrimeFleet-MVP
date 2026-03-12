@@ -4,18 +4,21 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import helmet from 'helmet';
-import { PrismaClient } from '@prisma/client';
-import authRoutes from './routes/authRoutes.js';
+import { prisma } from './config/db.js'; import authRoutes from './routes/authRoutes.js';
 import { protect, restrictTo } from './middleware/authMiddleware.js';
 
+import driverRoutes from "./routes/driverRoutes.js";
+import vehicleRoutes from "./routes/vehicleRoutes.js";
+
 const app = express();
-const prisma = new PrismaClient();
 
 // 1. MIDDLEWARE
 app.use(helmet());  // Security headers
 app.use(cors());    // Enable Cross-Origin Resource Sharing
 app.use(morgan('dev')); // Log requests to terminal
 app.use(express.json()); // Parse JSON bodies
+app.use("/drivers", driverRoutes);
+app.use("/vehicles", vehicleRoutes);
 
 // app.get('/', (req, res) => {
 //   res.status(200).send('PrimeFleet-MVP API is Live and Connected to Supabase!');
