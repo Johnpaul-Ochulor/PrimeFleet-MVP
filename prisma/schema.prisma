@@ -95,10 +95,9 @@ model Booking {
   // Requirement: Pickup/Dropoff Locations
   pickupLocation  String
   dropoffLocation String
-  
-  
   instructions    String? // Optional driver notes
 
+  
   // Relations
   userId          String?
   user            User?         @relation(fields: [userId], references: [id])
