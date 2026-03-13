@@ -2,7 +2,7 @@
 # Dependencies
 node_modules/
 
-# Environment Variables (Crucial: This hides your Supabase password)
+# Environment Variables 
 .env
 .env.local
 .env.development.local
@@ -10,7 +10,7 @@ node_modules/
 .env.production.local
 
 # Prisma Generated Client
-# If you customized the output to a 'generated' folder, use that name here:
+# If customized the output to a 'generated' folder, use that name here:
 /generated
 /prisma/client
 node_modules/.prisma
@@ -24,6 +24,6 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
-# Build/Dist folders (if you use TypeScript later)
+# Build/Dist folders (if you use TypeScript is used later)
 /dist
 /build
