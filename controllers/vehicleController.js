@@ -24,18 +24,25 @@ export const createVehicle = async (req, res) => {
 
 };
 
+// export const getVehicle = async (req, res) => {
+//   try {
+
+//     const vehicle = await prisma.vehicle.findUnique({
+//       where: {
+//         id: Number(req.params.id)
+//       },
+//       include: {
+//         driver: true
+//       }
+//     });
 export const getVehicle = async (req, res) => {
   try {
-
     const vehicle = await prisma.vehicle.findUnique({
       where: {
-        id: Number(req.params.id)
+        id: req.params.id 
       },
-      include: {
-        driver: true
-      }
+      include: { driver: true }
     });
-
     res.json(vehicle);
 
   } catch (error) {

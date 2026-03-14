@@ -29,7 +29,7 @@ const user = await prisma.user.findUnique({
         status: 'success',
         token,
         data: {
-            user: {id: user.id, email: user.emai, role: user.role}
+            user: {id: user.id, email: user.email, role: user.role}
         }
     })
 

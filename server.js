@@ -1,69 +1,75 @@
-
 import 'dotenv/config'; 
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import helmet from 'helmet';
-import { prisma } from './config/db.js'; import authRoutes from './routes/authRoutes.js';
-import { protect, restrictTo } from './middleware/authMiddleware.js';
+import { prisma } from './config/db.js';
 
+// Route Imports
+import authRoutes from './routes/authRoutes.js';
 import driverRoutes from "./routes/driverRoutes.js";
 import vehicleRoutes from "./routes/vehicleRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
+import { protect, restrictTo } from './middleware/authMiddleware.js';
 
 const app = express();
 
-// 1. MIDDLEWARE
-app.use(helmet());  // Security headers
-app.use(cors());    // Enable Cross-Origin Resource Sharing
-app.use(morgan('dev')); // Log requests to terminal
-app.use(express.json()); // Parse JSON bodies
-app.use("/drivers", driverRoutes);
-app.use("/vehicles", vehicleRoutes);
-// Main Booking Endpoint
+// 1. GLOBAL MIDDLEWARE
+app.use(helmet()); 
+app.use(cors()); 
+app.use(morgan('dev')); 
+app.use(express.json()); 
+
+// 2. MOUNT API ROUTES (Version 1)
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/drivers', driverRoutes);
+app.use('/api/v1/vehicles', vehicleRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
 
-// app.get('/', (req, res) => {
-//   res.status(200).send('PrimeFleet-MVP API is Live and Connected to Supabase!');
-// });
+// 3. SPECIAL & TEST ROUTES
 app.get('/', (req, res) => {
-  res.send('PrimeFleet-MVP API is Live');
+  res.send('PrimeFleet-MVP API is Live and Operational');
 });
 
-// 2. ROUTES
-app.use('/api/v1/auth', authRoutes);
-
-
+// Security Test Route
 app.get('/api/v1/admin-only-test', protect, restrictTo('SUPER_ADMIN'), (req, res) => {
   res.json({
     message: `Welcome ${req.user.fullName}, you have Admin access!`,
   });
 });
-// Routes will go here...
-app.get('/test', (req, res) => {
-  res.json({ message: "Middleware is working!" });
-});
 
-app.get('/api/v1/admin-only-test', protect, restrictTo('SUPER_ADMIN'), (req, res) => {
-  res.json({
-    message: `Welcome ${req.user.fullName}, you have Admin access!`,
-  });
-});
-// 3. Testing
+// JSON Test Route
 app.post('/api/test-json', (req, res) => {
-  console.log("Data received from Postman:", req.body);
-  res.json({ message: "Middleware is working!", receivedData: req.body });
+  console.log("Data received:", req.body);
+  res.json({ message: "JSON Body Parsing is working!", receivedData: req.body });
 });
 
-// 4. GLOBAL ERROR HANDLER (Should be the last middleware)
+// 4. GLOBAL ERROR HANDLER
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({
+  res.status(err.status || 500).json({
     success: false,
     message: err.message || "Internal Server Error",
   });
 });
 
-// 5. START SERVER (Always at the very bottom)
+// 5. START SERVER
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// Connect to Database before starting the listener
+async function startServer() {
+  try {
+    await prisma.$connect();
+    console.log('✅ Database connected successfully');
+    
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📡 Endpoints available at http://localhost:${PORT}/api/v1`);
+    });
+  } catch (error) {
+    console.error('❌ Database connection failed:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
