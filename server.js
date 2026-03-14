@@ -9,6 +9,7 @@ import { protect, restrictTo } from './middleware/authMiddleware.js';
 
 import driverRoutes from "./routes/driverRoutes.js";
 import vehicleRoutes from "./routes/vehicleRoutes.js";
+import bookingRoutes from "./routes/bookingRoutes.js";
 
 const app = express();
 
@@ -19,6 +20,8 @@ app.use(morgan('dev')); // Log requests to terminal
 app.use(express.json()); // Parse JSON bodies
 app.use("/drivers", driverRoutes);
 app.use("/vehicles", vehicleRoutes);
+// Main Booking Endpoint
+app.use('/api/v1/bookings', bookingRoutes);
 
 // app.get('/', (req, res) => {
 //   res.status(200).send('PrimeFleet-MVP API is Live and Connected to Supabase!');
