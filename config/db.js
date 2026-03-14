@@ -21,7 +21,7 @@ const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
   max: 10,
   idleTimeoutMillis: 30000, // Keep idle connections open for 30s
-  connectionTimeoutMillis: 5000 // Give it 5s to establish a connection
+  connectionTimeoutMillis: 10000 // Give it 10s to establish a connection
 })
 
 const adapter = new PrismaPg(pool)
