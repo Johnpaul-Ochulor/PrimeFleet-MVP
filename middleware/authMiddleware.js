@@ -19,7 +19,7 @@ export const protect = async (req, res, next) => {
     // 2. Verify the token using your JWT_SECRET from .env
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // 3. Check if the user still exists in Supabase
+    // 3. Check if the user still exists in PostgrelSQL
     const currentUser = await prisma.user.findUnique({ 
       where: { id: decoded.id } 
     });
