@@ -26,7 +26,7 @@ export const createVehicle = async (req, res) => {
     if (req.file) {
       const fileBase64 = req.file.buffer.toString('base64');
       const fileUri = `data:${req.file.mimetype};base64,${fileBase64}`;
-      const uploadRes = await cloudinary.uploader.upload(req.file.path, { folder: 'primefleet/vehicles' });
+      const uploadRes = await cloudinary.uploader.upload(fileUri, { folder: 'primefleet/vehicles' });
       photoUrl = uploadRes.secure_url;
     }
 
