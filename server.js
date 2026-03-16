@@ -8,6 +8,7 @@ import { prisma } from './config/db.js';
 // Route Imports
 import authRoutes from './routes/authRoutes.js';
 import driverRoutes from "./routes/driverRoutes.js";
+import bookingsRoute from "./routes/bookingsRoute.js"
 import vehicleRoutes from "./routes/vehicleRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import { protect, restrictTo } from './middleware/authMiddleware.js';
@@ -25,6 +26,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/drivers', driverRoutes);
 app.use('/api/v1/vehicles', vehicleRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
+app.use('/api/v1/bookings', bookingsRoute);
 
 // 3. SPECIAL & TEST ROUTES
 app.get('/', (req, res) => {
