@@ -26,15 +26,24 @@ export const createDriver = async (req, res) => {
     let photoUrl = '';
     let licenseUrl = '';
 
+    const uploadToCloudinary = async (file, folder) => {
+      const fileBase64 = file.buffer.toString('base64');
+      const fileUri = `data:${file.mimetype};base64,${fileBase64}`;
+      const uploadRes = await cloudinary.uploader.upload(fileUri, { folder });
+      return uploadRes.secure_url;
+    };
+
     // Handling files from Multer (upload.fields)
     if (req.files?.photo) {
-      const res = await cloudinary.uploader.upload(req.files.photo[0].path, { folder: 'primefleet/drivers' });
-      photoUrl = res.secure_url;
+      // const res = await cloudinary.uploader.upload(req.files.photo[0].path, { folder: 'primefleet/drivers' });
+      // photoUrl = res.secure_url;
+      photoUrl = await uploadToCloudinary(req.files.photo[0], 'primefleet/drivers');
     }
 
     if (req.files?.licenseDocument) {
-      const res = await cloudinary.uploader.upload(req.files.licenseDocument[0].path, { folder: 'primefleet/licenses' });
-      licenseUrl = res.secure_url;
+      // const res = await cloudinary.uploader.upload(req.files.licenseDocument[0].path, { folder: 'primefleet/licenses' });
+      // licenseUrl = res.secure_url;
+      licenseUrl = await uploadToCloudinary(req.files.licenseDocument[0], 'primefleet/licenses');
     }
 
     const driver = await Driver.create({
