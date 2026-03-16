@@ -1,79 +1,66 @@
-import { prisma } from '../config/db.js';
+import { Vehicle } from '../models/index.js';
+import cloudinary from '../config/cloudinary.js';
 
-export const createVehicle = async (req, res) => {
-
-  const vehicle = await prisma.vehicle.create({
-      data: {
-        make: req.body.make,
-        model: req.body.model,
-        year: Number(req.body.year),
-        plateNumber: req.body.plateNumber,
-        vehicleType: req.body.vehicleType,
-        pricePerDay: Number(req.body.pricePerDay),
-        driverId: req.body.driverId,
-        photoUrl: req.body.photoUrl,
-        inspectionRecordUrl: req.body.inspectionRecordUrl
-      }
-    });
-
-    res.status(201).json({
-      success: true,
-      data: vehicle
-    });
-
-
-};
-
-// export const getVehicle = async (req, res) => {
-//   try {
-
-//     const vehicle = await prisma.vehicle.findUnique({
-//       where: {
-//         id: Number(req.params.id)
-//       },
-//       include: {
-//         driver: true
-//       }
-//     });
-export const getVehicle = async (req, res) => {
+export const getVehicles = async (req, res) => {
   try {
-    const vehicle = await prisma.vehicle.findUnique({
-      where: {
-        id: req.params.id 
-      },
-      include: { driver: true }
-    });
-    res.json(vehicle);
-
+    const vehicles = await Vehicle.findAll();
+    res.json({ success: true, data: vehicles });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-export const getVehicles = async (req, res) => {
+export const getVehicle = async (req, res) => {
+  try {
+    const vehicle = await Vehicle.findByPk(req.params.id);
+    if (!vehicle) return res.status(404).json({ success: false, message: 'Vehicle not found' });
+    res.json({ success: true, data: vehicle });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
-  const vehicles = await prisma.vehicle.findMany({
-    include: { driver: true }
-  });
+export const createVehicle = async (req, res) => {
+  try {
+    let photoUrl = '';
+    if (req.file) {
+      const fileBase64 = req.file.buffer.toString('base64');
+      const fileUri = `data:${req.file.mimetype};base64,${fileBase64}`;
+      const uploadRes = await cloudinary.uploader.upload(req.file.path, { folder: 'primefleet/vehicles' });
+      photoUrl = uploadRes.secure_url;
+    }
 
-  res.json(vehicles);
+    const vehicle = await Vehicle.create({
+      ...req.body,
+      photoUrl
+    });
+
+    res.status(201).json({ success: true, data: vehicle });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
 };
 
 export const updateVehicle = async (req, res) => {
-
-  const vehicle = await prisma.vehicle.update({
-    where: { id: Number(req.params.id) },
-    data: req.body
-  });
-
-  res.json(vehicle);
+  try {
+    const vehicle = await Vehicle.findByPk(req.params.id);
+    if (!vehicle) return res.status(404).json({ success: false, message: 'Vehicle not found' });
+    
+    await vehicle.update(req.body);
+    res.json({ success: true, data: vehicle });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
 };
 
 export const deleteVehicle = async (req, res) => {
-
-  await prisma.vehicle.delete({
-    where: { id: Number(req.params.id) }
-  });
-
-  res.json({ message: "Vehicle deleted" });
+  try {
+    const vehicle = await Vehicle.findByPk(req.params.id);
+    if (!vehicle) return res.status(404).json({ success: false, message: 'Vehicle not found' });
+    
+    await vehicle.destroy();
+    res.json({ success: true, message: 'Vehicle deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 };

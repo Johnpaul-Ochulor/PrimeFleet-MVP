@@ -1,87 +1,52 @@
-import { prisma } from "../config/db.js";
-import cloudinary from "../config/cloudinary.js";
-
-// Helper function to handle Cloudinary uploads from memory (Buffer)
-const uploadToCloudinary = (fileBuffer, folder) => {
-  return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      { folder: folder },
-      (error, result) => {
-        if (error) return reject(error);
-        resolve(result);
-      }
-    );
-    uploadStream.end(fileBuffer);
-  });
-};
-
-export const createDriver = async (req, res) => {
-  try {
-    let profilePhotoUrl = null;
-    let licensePhotoUrl = null;
-
-    // 1. Handle Profile Photo Upload
-    if (req.files?.photo) {
-      const result = await uploadToCloudinary(req.files.photo[0].buffer, "drivers/profiles");
-      profilePhotoUrl = result.secure_url;
-    }
-
-    // 2. Handle License Document Upload
-    if (req.files?.licenseDocument) {
-      const result = await uploadToCloudinary(req.files.licenseDocument[0].buffer, "drivers/licenses");
-      licensePhotoUrl = result.secure_url;
-    }
-
-    // 3. Save to Database (Matching your Prisma Schema field names)
-    const driver = await prisma.driver.create({
-      data: {
-        name: req.body.name,
-        email: req.body.email,
-        phone: req.body.phone,
-        licenseNumber: req.body.licenseNumber,
-        profilePhotoUrl: profilePhotoUrl,
-        licensePhotoUrl: licensePhotoUrl,
-        isAvailable: req.body.isAvailable === 'false' ? false : true
-      }
-    });
-
-    res.status(201).json({
-      status: 'success',
-      data: driver
-    });
-
-  } catch (error) {
-    console.error("Driver Creation Error:", error);
-    res.status(500).json({ error: error.message });
-  }
-};
+import { Driver } from '../models/index.js';
+import cloudinary from '../config/cloudinary.js';
 
 export const getDrivers = async (req, res) => {
   try {
-    const drivers = await prisma.driver.findMany({
-      include: { vehicles: true }
-    });
-    res.json(drivers);
+    const drivers = await Driver.findAll();
+    res.json({ success: true, data: drivers });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
 export const getDriver = async (req, res) => {
   try {
-    const driver = await prisma.driver.findUnique({
-      where: { 
-        id: req.params.id // Removed Number() because Prisma uses UUID strings
-      },
-      include: { vehicles: true }
-    });
+    const driver = await Driver.findByPk(req.params.id);
+    if (!driver) return res.status(404).json({ success: false, message: 'Driver not found' });
+    res.json({ success: true, data: driver });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
-    if (!driver) {
-      return res.status(404).json({ message: "Driver not found" });
+export const createDriver = async (req, res) => {
+  try {
+    const { name, phone, licenseNumber } = req.body;
+    let photoUrl = '';
+    let licenseUrl = '';
+
+    // Handling files from Multer (upload.fields)
+    if (req.files?.photo) {
+      const res = await cloudinary.uploader.upload(req.files.photo[0].path, { folder: 'primefleet/drivers' });
+      photoUrl = res.secure_url;
     }
 
-    res.json(driver);
+    if (req.files?.licenseDocument) {
+      const res = await cloudinary.uploader.upload(req.files.licenseDocument[0].path, { folder: 'primefleet/licenses' });
+      licenseUrl = res.secure_url;
+    }
+
+    const driver = await Driver.create({
+      name,
+      phone,
+      licenseNumber,
+      photoUrl,
+      licensePhotoUrl: licenseUrl
+    });
+
+    res.status(201).json({ success: true, data: driver });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(400).json({ success: false, message: error.message });
   }
 };

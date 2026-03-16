@@ -1,29 +1,48 @@
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import { Booking, Payment, Vehicle } from '../models/index.js';
 
-// Task: Quote Calculation Logic
-export const getQuote = async (req, res) => {
-  const { zoneId, vehicleType } = req.body;
+// User creates a booking (Pending Payment)
+export const createBooking = async (req, res) => {
   try {
-    const zone = await prisma.zone.findUnique({ where: { id: zoneId } });
-    if (!zone) return res.status(404).json({ error: "Zone not found" });
+    const { vehicleId, amount, ...bookingData } = req.body;
+    
+    // Create the booking
+    const booking = await Booking.create({
+      ...bookingData,
+      vehicleId,
+      userId: req.user.id,
+      status: 'PENDING_PAYMENT'
+    });
 
-    // Multiplier: SUV = 1.5x, Sedan = 1.0x
-    const multiplier = vehicleType === 'SUV' ? 1.5 : 1.0;
-    const estimate = zone.basePrice * multiplier;
+    // Create the associated Payment record
+    await Payment.create({
+      bookingId: booking.id,
+      amount: amount,
+      depositAmount: amount * 0.5, // Example: 50% deposit
+      balanceDue: amount * 0.5,
+      status: 'PENDING_VERIFICATION'
+    });
 
-    res.json({ success: true, estimate, currency: "NGN" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(201).json({ success: true, data: booking });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
-// Task: Guest Booking Creation
-export const createBooking = async (req, res) => {
+// Admin Approves Transfer
+export const approveBookingPayment = async (req, res) => {
+  const { id } = req.params;
   try {
-    const booking = await prisma.booking.create({ data: req.body });
-    res.status(201).json({ success: true, booking });
-  } catch (err) {
-    res.status(500).json({ error: "Booking failed. Check your data fields." });
+    const booking = await Booking.findByPk(id);
+    const payment = await Payment.findOne({ where: { bookingId: id } });
+
+    if (!booking || !payment) return res.status(404).json({ message: 'Not found' });
+
+    // Update both records
+    await booking.update({ status: 'CONFIRMED', confirmedAt: new Date() });
+    await payment.update({ status: 'SUCCESSFUL' });
+
+    res.json({ success: true, message: 'Payment verified and booking confirmed!' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };

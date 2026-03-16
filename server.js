@@ -3,7 +3,11 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import helmet from 'helmet';
-import { prisma } from './config/db.js';
+
+// 1. CHANGE: Import Sequelize instead of Prisma
+import sequelize from './config/db.js'; 
+// 2. CHANGE: Import your models to make sure they are registered for syncing
+import './models/index.js'; 
 
 // Route Imports
 import authRoutes from './routes/authRoutes.js';
@@ -14,37 +18,23 @@ import { protect, restrictTo } from './middleware/authMiddleware.js';
 
 const app = express();
 
-// 1. GLOBAL MIDDLEWARE
+// MIDDLEWARE
 app.use(helmet()); 
 app.use(cors()); 
 app.use(morgan('dev')); 
 app.use(express.json()); 
 
-// 2. MOUNT API ROUTES (Version 1)
+// ROUTES
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/drivers', driverRoutes);
 app.use('/api/v1/vehicles', vehicleRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
 
-// 3. SPECIAL & TEST ROUTES
 app.get('/', (req, res) => {
-  res.send('PrimeFleet-MVP API is Live and Operational');
+  res.send('PrimeFleet-MVP API (Sequelize Edition) is Live');
 });
 
-// Security Test Route
-app.get('/api/v1/admin-only-test', protect, restrictTo('SUPER_ADMIN'), (req, res) => {
-  res.json({
-    message: `Welcome ${req.user.fullName}, you have Admin access!`,
-  });
-});
-
-// JSON Test Route
-app.post('/api/test-json', (req, res) => {
-  console.log("Data received:", req.body);
-  res.json({ message: "JSON Body Parsing is working!", receivedData: req.body });
-});
-
-// 4. GLOBAL ERROR HANDLER
+// GLOBAL ERROR HANDLER
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.status || 500).json({
@@ -53,21 +43,25 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 5. START SERVER
 const PORT = process.env.PORT || 5000;
 
-// Connect to Database before starting the listener
+// 3. CHANGE: Use Sequelize Authenticate and Sync
 async function startServer() {
   try {
-    await prisma.$connect();
-    console.log('✅ Database connected successfully');
+    // Check if the connection works
+    await sequelize.authenticate();
+    console.log('✅ Database connected successfully (Sequelize)');
+
+    // This creates/updates the tables in your Postgres DB automatically
+    await sequelize.sync({ alter: true });
+    console.log('✅ Database tables synced successfully');
     
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📡 Endpoints available at http://localhost:${PORT}/api/v1`);
     });
   } catch (error) {
-    console.error('❌ Database connection failed:', error);
+    console.error('❌ Database connection/sync failed:', error);
     process.exit(1);
   }
 }

@@ -1,9 +1,13 @@
 import express from 'express';
-import { getQuote, createBooking } from '../controllers/bookingController.js';
+import { createBooking, approveBookingPayment } from '../controllers/bookingController.js';
+import { protect, restrictTo } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.post('/quote', getQuote);
-router.post('/', createBooking);
+// Customers can book
+router.post('/', protect, createBooking);
+
+// Only Super Admin can approve the bank transfer
+router.patch('/:id/approve', protect, restrictTo('SUPER_ADMIN'), approveBookingPayment);
 
 export default router;
