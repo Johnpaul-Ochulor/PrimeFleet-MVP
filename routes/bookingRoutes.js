@@ -1,13 +1,25 @@
 import express from 'express';
-import { createBooking, approveBookingPayment } from '../controllers/bookingController.js';
+import { createBooking, approveBookingPayment,
+  getBookingByReference,
+  getAllBookings,
+  assignDriver } from '../controllers/bookingController.js';
 import { protect, restrictTo } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Customers can book
+// Customers can create booking
 router.post('/', protect, createBooking);
 
-// Only Super Admin can approve the bank transfer
+// Customer tracking (can be public OR protected depending on your design)
+router.get('/reference/:reference', getBookingByReference);
+
+// Admin: get all bookings
+router.get('/', protect, restrictTo('ADMIN', 'SUPER_ADMIN'), getAllBookings);
+
+// Admin: assign driver
+router.patch('/:id/assign-driver', protect, restrictTo('ADMIN', 'SUPER_ADMIN'), assignDriver);
+
+// Super Admin: approve payment
 router.patch('/:id/approve', protect, restrictTo('SUPER_ADMIN'), approveBookingPayment);
 
 export default router;

@@ -1,4 +1,5 @@
 import { Booking, Payment, Vehicle } from '../models/index.js';
+import { v4 as uuidv4 } from 'uuid';
 
 // User creates a booking (Pending Payment)
 export const createBooking = async (req, res) => {
@@ -10,6 +11,7 @@ export const createBooking = async (req, res) => {
       ...bookingData,
       vehicleId,
       userId: req.user.id,
+      reference: "PF-" + uuidv4().slice(0, 8), 
       status: 'PENDING_PAYMENT'
     });
 
@@ -44,5 +46,97 @@ export const approveBookingPayment = async (req, res) => {
     res.json({ success: true, message: 'Payment verified and booking confirmed!' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Get booking details by reference
+export const getBookingByReference = async (req, res) => {
+  try {
+    const { reference } = req.params;
+
+    const booking = await Booking.findOne({
+      where: { reference },
+      include: [
+        { model: Vehicle },
+        { model: Payment }
+      ]
+    });
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found"
+      });
+    }
+
+    res.json({ success: true, data: booking });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+
+// Admin gets all bookings
+export const getAllBookings = async (req, res) => {
+  try {
+    const bookings = await Booking.findAll({
+      include: [
+        { model: Vehicle },
+        { model: Payment }
+      ],
+      order: [["createdAt", "DESC"]]
+    });
+
+    res.json({
+      success: true,
+      count: bookings.length,
+      data: bookings
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+
+// Admin assigns driver to booking
+export const assignDriver = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { driverId } = req.body;
+
+    const booking = await Booking.findByPk(id);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found"
+      });
+    }
+
+    await booking.update({
+      driverId,
+      status: "ASSIGNED",
+      assignedAt: new Date()
+    });
+
+    res.json({
+      success: true,
+      message: "Driver assigned successfully",
+      data: booking
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
