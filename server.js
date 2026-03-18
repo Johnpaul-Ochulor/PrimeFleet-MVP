@@ -14,6 +14,7 @@ import authRoutes from './routes/authRoutes.js';
 import driverRoutes from "./routes/driverRoutes.js";
 import vehicleRoutes from "./routes/vehicleRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
+import paymentRoutes from './routes/paymentRoutes.js';
 import { protect, restrictTo } from './middleware/authMiddleware.js';
 
 const app = express();
@@ -29,6 +30,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/drivers', driverRoutes);
 app.use('/api/v1/vehicles', vehicleRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
+app.use('/api/v1/payments', paymentRoutes);
 
 app.get('/', (req, res) => {
   res.send('PrimeFleet-MVP API (Sequelize Edition) is Live');

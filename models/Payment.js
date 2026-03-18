@@ -8,7 +8,8 @@ const Payment = sequelize.define('Payment', {
   balanceDue: { type: DataTypes.FLOAT, allowNull: false },
   type: { type: DataTypes.STRING }, // e.g., "Bank Transfer"
   status: { type: DataTypes.STRING, defaultValue: "PENDING_VERIFICATION" },
-  transactionRef: { type: DataTypes.STRING }
+  transactionRef: { type: DataTypes.STRING },
+  proofUrl: { type: DataTypes.STRING }
 });
 
 export default Payment;
