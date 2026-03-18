@@ -1,5 +1,5 @@
 import express from 'express';
-import { uploadPaymentProof, getPendingPayments } from '../controllers/paymentController.js';
+import { uploadPaymentProof, getPendingPayments, verifyPayment } from '../controllers/paymentController.js';
 import { protect, restrictTo } from '../middleware/authMiddleware.js';
 import upload from '../middleware/upload.js';
 
