@@ -50,7 +50,7 @@ export const createDriver = async (req, res) => {
       name,
       phone,
       licenseNumber,
-      photoUrl,
+      profilePhotoUrl: photoUrl,
       licensePhotoUrl: licenseUrl
     });
 
