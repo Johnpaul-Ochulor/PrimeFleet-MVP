@@ -58,3 +58,28 @@ export const getPendingPayments = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const verifyPayment = async (req, res) => {
+  try {
+    const { id } = req.params; // The payment ID
+    const { status } = req.body; // 'SUCCESS' or 'FAILED'
+
+    const payment = await Payment.findByPk(id);
+
+    if (!payment) {
+      return res.status(404).json({ success: false, message: "Payment record not found" });
+    }
+
+    // Update the status
+    payment.status = status;
+    await payment.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Payment marked as ${status}`,
+      data: payment
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

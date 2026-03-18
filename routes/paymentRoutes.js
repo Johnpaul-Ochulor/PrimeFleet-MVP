@@ -11,4 +11,7 @@ router.post('/upload-proof', protect, upload.single('proofImage'), uploadPayment
 // Admin views pending payments
 router.get('/pending', protect, restrictTo('SUPER_ADMIN'), getPendingPayments);
 
+// Admin verifies a specific payment by ID
+router.patch('/verify/:id', protect, restrictTo('SUPER_ADMIN'), verifyPayment);
+
 export default router;
