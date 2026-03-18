@@ -8,7 +8,7 @@ export const uploadPaymentProof = async (req, res) => {
   console.log('Body:', req.body);
 
   try {
-    // 2. Destructure EVERYTHING model requires
+    // 2. Destructure EVERYTHING your model requires
     const { amount, depositAmount, balanceDue, transactionRef, type } = req.body;
 
     // 3. Safety Check: If Multer didn't catch the file, stop here
