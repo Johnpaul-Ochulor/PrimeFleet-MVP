@@ -1,4 +1,4 @@
-import Payment from '../models/Payment.js';
+import { Payment, Booking } from '../models/Payment.js';
 import cloudinary from '../config/cloudinary.js';
 
 export const uploadPaymentProof = async (req, res) => {
@@ -50,12 +50,23 @@ export const uploadPaymentProof = async (req, res) => {
 
 export const getPendingPayments = async (req, res) => {
   try {
-    const payments = await Payment.findAll({ 
-      where: { status: 'PENDING_VERIFICATION' } 
+    const payments = await Payment.findAll({
+      where: { status: "PENDING_VERIFICATION" },
+      include: [{ model: Booking }],
+      order: [["createdAt", "DESC"]]
     });
-    res.status(200).json({ success: true, data: payments });
+
+    res.json({
+      success: true,
+      count: payments.length,
+      data: payments
+    });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 

@@ -12,12 +12,31 @@ export const getVehicles = async (req, res) => {
 
 export const getVehicle = async (req, res) => {
   try {
-    const vehicle = await Vehicle.findByPk(req.params.id);
-    if (!vehicle) return res.status(404).json({ success: false, message: 'Vehicle not found' });
-    res.json({ success: true, data: vehicle });
+    const { id } = req.params;
+
+    const vehicle = await Vehicle.findByPk(id, {
+      include: [{ model: Driver }]
+    });
+
+    if (!vehicle) {
+      return res.status(404).json({
+        success: false,
+        message: "Vehicle not found"
+      });
+    }
+
+    res.json({
+      success: true,
+      data: vehicle
+    });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
+
 };
 
 export const createVehicle = async (req, res) => {

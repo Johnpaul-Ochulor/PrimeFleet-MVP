@@ -1,12 +1,24 @@
 import { Driver } from '../models/index.js';
 import cloudinary from '../config/cloudinary.js';
 
+
 export const getDrivers = async (req, res) => {
   try {
-    const drivers = await Driver.findAll();
-    res.json({ success: true, data: drivers });
+    const drivers = await Driver.findAll({
+      order: [["createdAt", "DESC"]]
+    });
+
+    res.json({
+      success: true,
+      count: drivers.length,
+      data: drivers
+    });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
@@ -59,3 +71,73 @@ export const createDriver = async (req, res) => {
     res.status(400).json({ success: false, message: error.message });
   }
 };
+
+export const approveDriver = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const driver = await Driver.findByPk(id);
+
+    if (!driver) {
+      return res.status(404).json({ message: "Driver not found" });
+    }
+
+    await driver.update({ approvalStatus: true });
+
+    res.json({
+      success: true,
+      message: "Driver approved",
+      data: driver
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const suspendDriver = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const driver = await Driver.findByPk(id);
+
+    if (!driver) {
+      return res.status(404).json({ message: "Driver not found" });
+    }
+
+    await driver.update({ isAvailable: false });
+
+    res.json({
+      success: true,
+      message: "Driver suspended",
+      data: driver
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const updateDriver = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const driver = await Driver.findByPk(id);
+
+    if (!driver) {
+      return res.status(404).json({ message: "Driver not found" });
+    }
+
+    await driver.update(req.body);
+
+    res.json({
+      success: true,
+      message: "Driver updated",
+      data: driver
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+

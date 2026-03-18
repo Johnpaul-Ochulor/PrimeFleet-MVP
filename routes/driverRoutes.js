@@ -6,7 +6,7 @@ import { createDriver, getDrivers, getDriver } from "../controllers/driverContro
 const router = express.Router();
 
 // Public/Team view: See all drivers
-router.get("/", getDrivers);
+router.get("/", protect, restrictTo("ADMIN"), getDrivers);
 router.get("/:id", getDriver);
 
 // Protected: Only Admins can create new drivers
@@ -20,5 +20,9 @@ router.post(
   ]),
   createDriver
 );
+
+router.patch("/:id/approve", protect, restrictTo("ADMIN"), approveDriver);
+router.patch("/:id/suspend", protect, restrictTo("ADMIN"), suspendDriver);
+router.patch("/:id", protect, restrictTo("ADMIN"), updateDriver);
 
 export default router;
