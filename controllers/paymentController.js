@@ -1,4 +1,4 @@
-import { Payment, Booking } from '../models/Payment.js';
+import { Payment, Booking } from '../models/index.js';
 import cloudinary from '../config/cloudinary.js';
 
 export const uploadPaymentProof = async (req, res) => {

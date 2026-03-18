@@ -1,7 +1,7 @@
 import express from "express";
 import upload from "../middleware/upload.js";
 import { protect, restrictTo } from "../middleware/authMiddleware.js";
-import { createDriver, getDrivers, getDriver } from "../controllers/driverController.js";
+import { createDriver, getDrivers, getDriver, approveDriver, suspendDriver, updateDriver } from "../controllers/driverController.js";
 
 const router = express.Router();
 
