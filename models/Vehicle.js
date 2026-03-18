@@ -8,7 +8,7 @@ const Vehicle = sequelize.define('Vehicle', {
   year: { type: DataTypes.INTEGER },
   plateNumber: { type: DataTypes.STRING, unique: true, allowNull: false },
   vehicleType: { 
-    type: DataTypes.ENUM('SEDAN', 'SUV', 'VAN', 'BUS'),
+    type: DataTypes.ENUM('SEDAN', 'SUV', 'VAN', 'BUS', 'LUXURY'),
     allowNull: false
   },
   pricePerDay: { type: DataTypes.FLOAT, allowNull: false },
