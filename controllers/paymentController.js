@@ -19,12 +19,15 @@ export const uploadPaymentProof = async (req, res) => {
       });
     }
 
-    // 4. Upload to Cloudinary
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: 'primefleet/payments',
-    });
+        // 4. Convert the buffer to a base64 string that Cloudinary understands
+        const fileBase64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
 
-    // 5. Create the record using the Cloudinary URL and Model fields
+        // 5. Upload the base64 string instead of req.file.path
+        const result = await cloudinary.uploader.upload(fileBase64, {
+        folder: 'primefleet/payments',
+        });
+
+    // 6. Create the record using the Cloudinary URL and Model fields
     const payment = await Payment.create({
       amount,
       depositAmount,
