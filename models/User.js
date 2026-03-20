@@ -9,7 +9,7 @@ const User = sequelize.define('User', {
   fullName: { type: DataTypes.STRING, allowNull: false },
   role: { 
     type: DataTypes.ENUM('SUPER_ADMIN', 'ADMIN', 'USER'), 
-    defaultValue: 'USER' 
+    defaultValue: 'USER' , allowNull: true
   }
 });
 

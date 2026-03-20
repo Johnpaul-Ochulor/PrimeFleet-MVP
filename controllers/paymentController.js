@@ -9,7 +9,7 @@ export const uploadPaymentProof = async (req, res) => {
 
   try {
     // 2. Destructure EVERYTHING your model requires
-    const { amount, depositAmount, balanceDue, transactionRef, type } = req.body;
+    const { amount, depositAmount, balanceDue, transactionRef, type, bookingId } = req.body;
 
     // 3. Safety Check: If Multer didn't catch the file, stop here
     if (!req.file) {
@@ -29,6 +29,7 @@ export const uploadPaymentProof = async (req, res) => {
 
     // 6. Create the record using the Cloudinary URL and Model fields
     const payment = await Payment.create({
+      bookingId,
       amount,
       depositAmount,
       balanceDue,

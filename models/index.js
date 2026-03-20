@@ -3,7 +3,7 @@ import Vehicle from './Vehicle.js';
 import Driver from './Driver.js';
 import Booking from './Booking.js';
 import Payment from './Payment.js';
-import Zone from './Zone.js';
+import { LocationSurcharge, isLateNight } from './LocationSurcharge.js';
 
 // Relationships
 User.hasMany(Booking);
@@ -18,9 +18,6 @@ Driver.hasMany(Booking, { as: 'BackupBookings', foreignKey: 'backupDriverId' });
 Booking.belongsTo(Driver, { as: 'PrimaryDriver', foreignKey: 'driverId' });
 Booking.belongsTo(Driver, { as: 'BackupDriver', foreignKey: 'backupDriverId' });
 
-Zone.hasMany(Booking);
-Booking.belongsTo(Zone);
-
 Booking.hasOne(Payment);
 Payment.belongsTo(Booking);
 
@@ -28,4 +25,4 @@ Payment.belongsTo(Booking);
 Driver.hasMany(Vehicle);
 Vehicle.belongsTo(Driver);
 
-export { User, Vehicle, Driver, Booking, Payment, Zone };
+export { User, Vehicle, Driver, Booking, Payment, LocationSurcharge, isLateNight };

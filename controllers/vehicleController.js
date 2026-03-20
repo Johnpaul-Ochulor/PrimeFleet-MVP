@@ -1,4 +1,4 @@
-import { Vehicle } from '../models/index.js';
+import { Vehicle, Driver } from '../models/index.js';
 import cloudinary from '../config/cloudinary.js';
 
 export const getVehicles = async (req, res) => {

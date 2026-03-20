@@ -2,7 +2,7 @@ import express from 'express';
 import { createBooking, approveBookingPayment,
   getBookingByReference,
   getAllBookings,
-  assignDriver } from '../controllers/bookingController.js';
+  assignDriver, generateQuote } from '../controllers/bookingController.js';
 import { protect, restrictTo } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -10,8 +10,12 @@ const router = express.Router();
 // Customers can create booking
 router.post('/', protect, createBooking);
 
+// Generate a price quote
+router.post('/quote', protect, generateQuote);
+
 // Customer tracking (can be public OR protected depending on your design)
 router.get('/reference/:reference', getBookingByReference);
+
 
 // Admin: get all bookings
 router.get('/', protect, restrictTo('ADMIN', 'SUPER_ADMIN'), getAllBookings);

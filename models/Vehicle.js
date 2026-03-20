@@ -14,7 +14,18 @@ const Vehicle = sequelize.define('Vehicle', {
   pricePerDay: { type: DataTypes.FLOAT, allowNull: false },
   isAvailable: { type: DataTypes.BOOLEAN, defaultValue: true },
   photoUrl: { type: DataTypes.STRING },
-  inspectionRecordUrl: { type: DataTypes.STRING }
+  inspectionRecordUrl: { type: DataTypes.STRING },
+  basePrice: {
+  type: DataTypes.FLOAT,
+  allowNull: false,
+  defaultValue: 0
+},
+
+pricePerKm: {
+  type: DataTypes.FLOAT,
+  allowNull: false,
+  defaultValue: 0
+}
 });
 
 export default Vehicle;

@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { User, Vehicle, Zone, Driver } from './models/index.js';
+import { User, Vehicle, LocationSurcharge, Driver } from './models/index.js';
 import sequelize from './config/db.js';
 
 const seedDatabase = async () => {
@@ -19,13 +19,13 @@ const seedDatabase = async () => {
     console.log('👤 Admin User created (admin@primefleet.com / admin123)');
 
     // 3. Create Zones
-    const zones = await Zone.bulkCreate([
-      { name: 'Ikeja' },
-      { name: 'Lekki' },
-      { name: 'Victoria Island' },
-      { name: 'Ajah' }
+    const zones = await LocationSurcharge.bulkCreate([
+      { name: 'Ikeja',            surcharge: 1500 },
+      { name: 'Lekki',            surcharge: 2000 },
+      { name: 'Victoria Island',  surcharge: 2500 },
+      { name: 'Ajah',             surcharge: 3000 }
     ]);
-    console.log('📍 Locations (Zones) created.');
+    console.log('📍 Location surcharges created.');
 
     // 4. Create a Driver
     const driver = await Driver.create({
@@ -45,6 +45,8 @@ const seedDatabase = async () => {
         plateNumber: 'KJA-123AA',
         vehicleType: 'SEDAN',
         pricePerDay: 25000,
+        basePrice: 5000,
+        pricePerKm: 150,
         driverId: driver.id
       },
       {

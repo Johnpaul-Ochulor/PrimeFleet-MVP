@@ -1,26 +1,53 @@
-import { Booking, Payment, Vehicle } from '../models/index.js';
+import { Booking, Payment, Vehicle, LocationSurcharge, isLateNight } from '../models/index.js';
 import { v4 as uuidv4 } from 'uuid';
 
 // User creates a booking (Pending Payment)
 export const createBooking = async (req, res) => {
   try {
-    const { vehicleId, amount, ...bookingData } = req.body;
-    
-    // Create the booking
+    const { vehicleId, amount, distance, pickupLocation, ...bookingData } = req.body;
+
+    // 1. Fetch the vehicle
+    const vehicle = await Vehicle.findByPk(vehicleId);
+    if (!vehicle) {
+      return res.status(404).json({ success: false, message: 'Vehicle not found' });
+    }
+
+    // 2. Recalculate the price server-side
+    let expectedAmount = vehicle.basePrice + (distance * vehicle.pricePerKm);
+
+    const location = await LocationSurcharge.findOne({ where: { name: pickupLocation } });
+    if (location) {
+      expectedAmount += location.surcharge;
+    }
+
+    if (isLateNight(new Date())) {
+      expectedAmount += 1500;
+    }
+
+    // 3. Compare against what the user sent
+    if (Math.round(amount) !== Math.round(expectedAmount)) {
+      return res.status(400).json({
+        success: false,
+        message: `Price mismatch. Expected ₦${expectedAmount}, received ₦${amount}.`
+      });
+    }
+
+    // 4. Create the booking
     const booking = await Booking.create({
       ...bookingData,
       vehicleId,
+      pickupLocation,
       userId: req.user.id,
-      reference: "PF-" + uuidv4().slice(0, 8), 
+      reference: "PF-" + uuidv4().slice(0, 8),
       status: 'PENDING_PAYMENT'
     });
 
-    // Create the associated Payment record
+    // 5. Create the payment record
     await Payment.create({
       bookingId: booking.id,
-      amount: amount,
-      depositAmount: amount * 0.5, // Example: 50% deposit
-      balanceDue: amount * 0.5,
+      amount: expectedAmount,        // use the server-calculated amount, not the user's
+      depositAmount: expectedAmount * 0.5,
+      balanceDue: expectedAmount * 0.5,
       status: 'PENDING_VERIFICATION'
     });
 
@@ -138,5 +165,53 @@ export const assignDriver = async (req, res) => {
       success: false,
       message: error.message
     });
+  }
+};
+
+
+
+
+export const generateQuote = async (req, res) => {
+  try {
+    const { vehicleId, distance, pickupLocation } = req.body;
+
+    const vehicle = await Vehicle.findByPk(vehicleId);
+
+    if (!vehicle) {
+      return res.status(404).json({ message: "Vehicle not found" });
+    }
+
+    // 1. Base + Distance
+    let total = vehicle.basePrice + (distance * vehicle.pricePerKm);
+
+    // 2. Location surcharge
+    const location = await LocationSurcharge.findOne({
+      where: { name: pickupLocation }
+    });
+
+    if (location) {
+      total += location.surcharge;
+    }
+
+    // 3. Time surcharge
+
+    const lateNight = isLateNight(new Date());
+
+    if (lateNight) { total += 1500; // flat late night fee
+    }
+
+    res.json({
+      success: true,
+      data: {
+        basePrice: vehicle.basePrice,
+        distanceCost: distance * vehicle.pricePerKm,
+        locationSurcharge: location?.surcharge || 0,
+        timeSurcharge: lateNight ? 1500 : 0,
+        total
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
