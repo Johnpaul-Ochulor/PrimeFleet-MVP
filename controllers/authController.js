@@ -1,6 +1,5 @@
 import { User } from '../models/index.js';
 import bcrypt from 'bcryptjs';
-import { Console } from 'effect';
 import jwt from 'jsonwebtoken';
 
 export const login = async (req, res) => {
@@ -18,7 +17,7 @@ export const login = async (req, res) => {
 
     res.json({
       token,
-      user: { id: user.id, fullName: user.fullName, }
+      user: { id: user.id, fullName: user.fullName, role: user.role }
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -28,7 +27,7 @@ export const login = async (req, res) => {
 export const register = async (req, res) => {
   try {
 
-    const { fullName, email, password } = req.body;
+    const { fullName, email, password, role } = req.body;
 
     // 1. Check if user already exists
     const existingUser = await User.findOne({ where: { email } });
@@ -44,7 +43,7 @@ export const register = async (req, res) => {
       fullName,
       email,
       password: hashedPassword,
-      // role: role || 'USER' // Default to user for now
+      role: role || 'ADMIN' // Default to admin for now
     });
 
     // 4. Generate token so they are logged in immediately
@@ -53,7 +52,7 @@ export const register = async (req, res) => {
     res.status(201).json({
       success: true,
       token,
-      user: { id: user.id, fullName: user.fullName}
+      user: { id: user.id, fullName: user.fullName, role: user.role }
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

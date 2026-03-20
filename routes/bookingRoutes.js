@@ -8,10 +8,10 @@ import { protect, restrictTo } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 // Customers can create booking
-router.post('/', protect, createBooking);
+router.post('/', createBooking);
 
 // Generate a price quote
-router.post('/quote', protect, generateQuote);
+router.post('/quote', generateQuote);
 
 // Customer tracking (can be public OR protected depending on your design)
 router.get('/reference/:reference', getBookingByReference);

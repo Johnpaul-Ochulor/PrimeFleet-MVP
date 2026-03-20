@@ -6,7 +6,7 @@ import upload from '../middleware/upload.js';
 const router = express.Router();
 
 // User uploads proof
-router.post('/upload-proof', protect, upload.single('proofImage'), uploadPaymentProof);
+router.post('/upload-proof', upload.single('proofImage'), uploadPaymentProof);
 
 // Admin views pending payments
 router.get('/pending', protect, restrictTo('SUPER_ADMIN'), getPendingPayments);

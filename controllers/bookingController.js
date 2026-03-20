@@ -37,7 +37,6 @@ export const createBooking = async (req, res) => {
       ...bookingData,
       vehicleId,
       pickupLocation,
-      userId: req.user.id,
       reference: "PF-" + uuidv4().slice(0, 8),
       status: 'PENDING_PAYMENT'
     });

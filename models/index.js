@@ -6,9 +6,6 @@ import Payment from './Payment.js';
 import { LocationSurcharge, isLateNight } from './LocationSurcharge.js';
 
 // Relationships
-User.hasMany(Booking);
-Booking.belongsTo(User);
-
 Vehicle.hasMany(Booking);
 Booking.belongsTo(Vehicle);
 
