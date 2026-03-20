@@ -8,8 +8,9 @@ const Driver = sequelize.define('Driver', {
   licenseNumber: { type: DataTypes.STRING, unique: true, allowNull: false },
   licensePhotoUrl: { type: DataTypes.STRING },
   profilePhotoUrl: { type: DataTypes.STRING },
-  approvalStatus: { type: DataTypes.BOOLEAN, defaultValue: false },
-  isAvailable: { type: DataTypes.BOOLEAN, defaultValue: true }
+  status: { type: DataTypes.ENUM('PENDING', 'APPROVED', 'SUSPENDED'), defaultValue: 'PENDING' },
+  // approvalStatus: { type: DataTypes.BOOLEAN, defaultValue: false },
+  isAvailable: { type: DataTypes.BOOLEAN, defaultValue: false }
 });
 
 export default Driver;

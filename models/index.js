@@ -4,6 +4,7 @@ import Driver from './Driver.js';
 import Booking from './Booking.js';
 import Payment from './Payment.js';
 import Zone from './Zone.js';
+import ZoneRate from './ZoneRate.js';
 
 // Relationships
 User.hasMany(Booking);
@@ -28,4 +29,8 @@ Payment.belongsTo(Booking);
 Driver.hasMany(Vehicle);
 Vehicle.belongsTo(Driver);
 
-export { User, Vehicle, Driver, Booking, Payment, Zone };
+// ZoneRate belongs to a "From" Zone and a "To" Zone
+ZoneRate.belongsTo(Zone, { as: 'FromZone', foreignKey: 'fromZoneId' });
+ZoneRate.belongsTo(Zone, { as: 'ToZone', foreignKey: 'toZoneId' });
+
+export { User, Vehicle, Driver, Booking, Payment, Zone, ZoneRate };

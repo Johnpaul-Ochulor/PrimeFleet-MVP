@@ -12,9 +12,15 @@ const Vehicle = sequelize.define('Vehicle', {
     allowNull: false
   },
   pricePerDay: { type: DataTypes.FLOAT, allowNull: false },
+  // Match this to what your controller uses
+  status: { 
+    type: DataTypes.ENUM('active', 'inactive', 'maintenance'), 
+    defaultValue: 'active' 
+  },
   isAvailable: { type: DataTypes.BOOLEAN, defaultValue: true },
   photoUrl: { type: DataTypes.STRING },
-  inspectionRecordUrl: { type: DataTypes.STRING }
+  inspectionRecordUrl: { type: DataTypes.STRING } // Ensure this matches the controller
 });
+
 
 export default Vehicle;

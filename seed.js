@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { User, Vehicle, Zone, Driver } from './models/index.js';
+import { User, Vehicle, Zone, Driver, ZoneRate } from './models/index.js';
 import sequelize from './config/db.js';
 
 const seedDatabase = async () => {
@@ -45,7 +45,8 @@ const seedDatabase = async () => {
         plateNumber: 'KJA-123AA',
         vehicleType: 'SEDAN',
         pricePerDay: 25000,
-        driverId: driver.id
+        driverId: driver.id,
+        status: 'active'
       },
       {
         make: 'Lexus',
@@ -54,9 +55,30 @@ const seedDatabase = async () => {
         plateNumber: 'APP-456BB',
         vehicleType: 'SUV',
         pricePerDay: 55000,
-        driverId: driver.id
+        driverId: driver.id,
+        status: 'active'
       }
     ]);
+    // 6. Create Pricing (ZoneRates)
+    // We need to link the IDs from the zones we just created
+    const ikeja = zones.find(z => z.name === 'Ikeja');
+    const vi = zones.find(z => z.name === 'Victoria Island');
+
+    await ZoneRate.bulkCreate([
+      {
+        fromZoneId: vi.id,
+        toZoneId: ikeja.id,
+        vehicleType: 'SUV',
+        basePrice: 45000.00
+      },
+      {
+        fromZoneId: vi.id,
+        toZoneId: ikeja.id,
+        vehicleType: 'SEDAN',
+        basePrice: 30000.00
+      }
+    ]);
+    console.log('💰 Zone Rates (Pricing) created.');
     console.log('🚗 Vehicles created.');
 
     console.log('✨ Seeding complete! Exiting...');

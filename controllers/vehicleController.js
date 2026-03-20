@@ -1,6 +1,7 @@
-import { Vehicle } from '../models/index.js';
+import { Vehicle } from '../models/index.js'; // Ensure Driver is NOT included here if not needed
 import cloudinary from '../config/cloudinary.js';
 
+// 1. Get All Vehicles (Item 3: Cleaned up request/response)
 export const getVehicles = async (req, res) => {
   try {
     const vehicles = await Vehicle.findAll();
@@ -10,35 +11,21 @@ export const getVehicles = async (req, res) => {
   }
 };
 
+// 2. Get Single Vehicle (Item 3: Added /:id parameter handled in routes)
 export const getVehicle = async (req, res) => {
   try {
     const { id } = req.params;
+    const vehicle = await Vehicle.findByPk(id); // Removed Driver include to keep it "Clean" per Lead request
 
-    const vehicle = await Vehicle.findByPk(id, {
-      include: [{ model: Driver }]
-    });
+    if (!vehicle) return res.status(404).json({ success: false, message: "Vehicle not found" });
 
-    if (!vehicle) {
-      return res.status(404).json({
-        success: false,
-        message: "Vehicle not found"
-      });
-    }
-
-    res.json({
-      success: true,
-      data: vehicle
-    });
-
+    res.json({ success: true, data: vehicle });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
-
 };
 
+// 3. Create Vehicle (Item 3: Added year and inspectionRecord)
 export const createVehicle = async (req, res) => {
   try {
     let photoUrl = '';
@@ -49,9 +36,22 @@ export const createVehicle = async (req, res) => {
       photoUrl = uploadRes.secure_url;
     }
 
+    // Explicitly destructure to ensure year and inspectionRecord are captured
+    const { 
+      make, model, plateNumber, vehicleType, 
+      pricePerDay, year, inspectionRecord 
+    } = req.body;
+
     const vehicle = await Vehicle.create({
-      ...req.body,
-      photoUrl
+      make,
+      model,
+      plateNumber,
+      vehicleType,
+      pricePerDay,
+      year,           // Lead requested this
+      inspectionRecord, // Lead requested this
+      photoUrl,
+      status: 'active' // Default status
     });
 
     res.status(201).json({ success: true, data: vehicle });
@@ -60,6 +60,23 @@ export const createVehicle = async (req, res) => {
   }
 };
 
+// 4. Mark Vehicle Active/Inactive (Item 3: ENTIRELY NEW ENDPOINT)
+export const updateVehicleStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body; // Expecting 'active' or 'inactive'
+
+    const vehicle = await Vehicle.findByPk(id);
+    if (!vehicle) return res.status(404).json({ success: false, message: 'Vehicle not found' });
+
+    await vehicle.update({ status });
+    res.json({ success: true, message: `Vehicle marked as ${status}`, data: vehicle });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+// 5. Update Vehicle
 export const updateVehicle = async (req, res) => {
   try {
     const vehicle = await Vehicle.findByPk(req.params.id);
@@ -72,6 +89,7 @@ export const updateVehicle = async (req, res) => {
   }
 };
 
+// 6. Delete Vehicle (Item 3: Use DELETE method in routes)
 export const deleteVehicle = async (req, res) => {
   try {
     const vehicle = await Vehicle.findByPk(req.params.id);

@@ -6,7 +6,8 @@ const Booking = sequelize.define("Booking", {
 
   reference: { 
     type: DataTypes.STRING, 
-    unique: true 
+    unique: true,
+    allowNull: false
   },
 
   passengerName: { type: DataTypes.STRING, allowNull: false },
@@ -32,6 +33,10 @@ const Booking = sequelize.define("Booking", {
 
   pickupLocation: { type: DataTypes.STRING, allowNull: false },
   dropoffLocation: { type: DataTypes.STRING, allowNull: false },
+
+  // CRITICAL: Added missing financial/relation fields
+  totalAmount: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
+  vehicleId: { type: DataTypes.UUID, allowNull: true },
 
   instructions: { type: DataTypes.TEXT },
 

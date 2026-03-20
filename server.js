@@ -16,6 +16,7 @@ import vehicleRoutes from "./routes/vehicleRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import paymentRoutes from './routes/paymentRoutes.js';
 import { protect, restrictTo } from './middleware/authMiddleware.js';
+import quoteRoutes from './routes/quoteRoutes.js';
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use('/api/v1/drivers', driverRoutes);
 app.use('/api/v1/vehicles', vehicleRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
 app.use('/api/v1/payments', paymentRoutes);
+app.use('/api/v1/quotes', quoteRoutes);
 
 app.get('/', (req, res) => {
   res.send('PrimeFleet-MVP API (Sequelize Edition) is Live');
@@ -56,6 +58,7 @@ async function startServer() {
 
     // This creates/updates the tables in your Postgres DB automatically
     await sequelize.sync({ alter: true });
+    // await sequelize.sync();
     console.log('✅ Database tables synced successfully');
     
     app.listen(PORT, () => {

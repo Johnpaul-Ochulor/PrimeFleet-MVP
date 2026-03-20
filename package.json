@@ -79,6 +79,7 @@
     "sqlstring": "^2.3.3",
     "std-env": "^3.10.0",
     "tinyexec": "^1.0.2",
+    "uuid": "^13.0.0",
     "valibot": "^1.2.0",
     "which": "^2.0.2",
     "zeptomatch": "^2.1.0"

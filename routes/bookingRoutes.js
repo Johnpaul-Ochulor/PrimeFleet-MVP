@@ -1,25 +1,39 @@
 import express from 'express';
-import { createBooking, approveBookingPayment,
+import { 
+  createBooking, 
+  updateBookingStatus,
   getBookingByReference,
   getAllBookings,
-  assignDriver } from '../controllers/bookingController.js';
+  assignDriver,
+  cancelBooking // Added this
+} from '../controllers/bookingController.js';
 import { protect, restrictTo } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Customers can create booking
-router.post('/', protect, createBooking);
+// --- CUSTOMER ENDPOINTS ---
 
-// Customer tracking (can be public OR protected depending on your design)
-router.get('/reference/:reference', getBookingByReference);
+// Create new booking (Item 1 in Notion)
+router.post('/', createBooking);
 
-// Admin: get all bookings
+// Get booking by reference number 
+// Path updated to /:reference to match the Lead's requirement exactly
+router.get('/:reference', getBookingByReference);
+
+
+// --- ADMIN & SUPER ADMIN ENDPOINTS ---
+
+// Get all bookings
 router.get('/', protect, restrictTo('ADMIN', 'SUPER_ADMIN'), getAllBookings);
 
-// Admin: assign driver
+// Update booking status / Approve Payment 
+// Using /status as the primary endpoint for status transitions
+router.patch('/:id/status', protect, restrictTo('SUPER_ADMIN'), updateBookingStatus);
+
+// Assign driver to booking 
 router.patch('/:id/assign-driver', protect, restrictTo('ADMIN', 'SUPER_ADMIN'), assignDriver);
 
-// Super Admin: approve payment
-router.patch('/:id/approve', protect, restrictTo('SUPER_ADMIN'), approveBookingPayment);
+// Cancel booking 
+router.patch('/:id/cancel', protect, restrictTo('ADMIN', 'SUPER_ADMIN'), cancelBooking);
 
 export default router;
