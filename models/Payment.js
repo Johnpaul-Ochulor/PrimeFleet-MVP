@@ -3,7 +3,6 @@ import sequelize from '../config/db.js';
 
 const Payment = sequelize.define('Payment', {
   id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-  bookingId: { type: DataTypes.UUID, allowNull: false },
   amount: { type: DataTypes.FLOAT, allowNull: false },
   depositAmount: { type: DataTypes.FLOAT, allowNull: false },
   balanceDue: { type: DataTypes.FLOAT, allowNull: false },
